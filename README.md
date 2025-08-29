@@ -36,7 +36,7 @@ Prospera is a powerful full-stack web app for brand/product identification and e
     ```env
    Add all of the following environment variables to your `.env` file and replace with your own values:
 
-   PORT
+   PORT=3000
    TAVILY_API_KEY
    SUPABASE_URL
    SUPABASE_ANON_KEY
