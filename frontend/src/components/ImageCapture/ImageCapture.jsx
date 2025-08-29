@@ -95,7 +95,7 @@ const ImageCapture = ({onImageCapture, capturedImage}) =>{
 
             {!isCameraOpen && (
                 <div className="w-full h-80 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center mb-4 relative overflow-hidden">
-                    {captureImage ? (
+                        {capturedImage ? (
                         <>
                             <img 
                                 src={capturedImage}

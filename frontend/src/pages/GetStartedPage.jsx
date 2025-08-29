@@ -1,126 +1,139 @@
-import React, { useState } from 'react'
-import { motion } from 'framer-motion'
-import { AlertTriangle, Loader2, Trophy } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
-import PageHeader from '../components/common/PageHeader'
-import ImageCapture from '../components/ImageCapture/ImageCapture'
-import { identifyBrandWithImage } from '../services/imageService'
-import { searchProduct, extractLinks } from '../services/searchService'
-import { analyzeGroq } from '../services/groqService'
-import { updateUserScore, getUserScore } from '../services/scoreService'
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { AlertTriangle, Loader2, Trophy } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import PageHeader from '../components/common/PageHeader';
+import ImageCapture from '../components/ImageCapture/ImageCapture';
+import { identifyBrandWithImage } from '../services/imageService';
+import { searchProduct, extractLinks } from '../services/searchService';
+import { analyzeGroq } from '../services/groqService';
+import { updateUserScore, getUserScore } from '../services/scoreService';
 
 function GetStartedPage() {
-    const navigate = useNavigate()
-    const [capturedImage, setCapturedImage] = useState(null)
-    const [isLoading, setIsLoading] = useState(false)
-    const [uploadMessage, setUploadMessage] = useState('')
-    const [brandResult, setBrandResult] = useState(null)
-    const [groqResult, setGroqResult] = useState(null)
-    const [error, setError] = useState('')
-    const [scoreUpdateStatus, setScoreUpdateStatus] = useState(null)
+  const navigate = useNavigate();
+  const [capturedImage, setCapturedImage] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [uploadMessage, setUploadMessage] = useState('');
+  const [brandResult, setBrandResult] = useState(null);
+  const [groqResult, setGroqResult] = useState(null);
+  const [error, setError] = useState('');
+  const [scoreUpdateStatus, setScoreUpdateStatus] = useState(null);
 
-    const handleImageCapture = (ImageData) => {
-        setCapturedImage(ImageData)
-        setUploadMessage('')
-        setBrandResult(null)
-    }
+  // Removed handleBack function as it's no longer needed
 
-    const handleAnalyzeImage = async () => {
-        if(!capturedImage) return
-        setIsLoading(true)
-        setUploadMessage('')
-        setBrandResult(null)
-        setGroqResult(null)
-        setError('')
-        setScoreUpdateStatus(null)
-        try{
-            const brandRes = await identifyBrandWithImage(capturedImage)
-            setBrandResult(brandRes)
+  const handleImageCapture = (imageData) => {
+    setCapturedImage(imageData);
+    setUploadMessage('');
+    setBrandResult(null);
+  };
 
-            const product = typeof brandRes === 'string' ? brandRes : (brandRes?.name || brandRes?.product || JSON.stringify(brandRes))
-
-            const searchRes = await searchProduct(product)
-            const links = searchRes.cleaned_links || []
-            let combinedText = ''
-            if(links.length>0){
-                const extractRes = await extractLinks(links)
-                if(extractRes && extractRes.data && Array.isArray(extractRes.data.results)){
-                    combinedText=extractRes.data.results.map(r=>r.rawContent).join('\n\n')
-                }
-            }
-
-            if(combinedText){
-                const groqRes = await analyzeGroq(product, combinedText)
-                setGroqResult(groqRes)
-
-                let scoreValue = null 
-                if(groqRes && typeof groqRes === 'object' && groqRes.result){
-                    const scoreMatch = groqRes.result.match(/Score:\s*(\d+)/i)
-                    scoreValue=scoreMatch ? parseInt(scoreMatch[1],10):null
-                }else if(typeof groqRes === 'string'){
-                    const scoreMatch = groqRes.match(/Score:\s*(\d+)/i)
-                    scoreValue = scoreMatch ? parseInt(scoreMatch[1],10):null
-                }
-
-                if (scoreValue !== null){
-                    try {
-                        console.log('Attempting updating user score with value:'. scoreValue)
-                        const scoreUpdateResult = await updateUserScore(scoreValue)
-                        console.log('Score updated:', scoreUpdateResult)
-
-                        const userScoreData = await getUserScore()
-                        console.log('User score data:', userScoreData)
-
-                        setStoreUpdateStatus({
-                            success: true,
-                            message: `Your eco-score has been updated! +${scoreValue} points.`,
-                            totalScore: userScoreData?.data?.user?.score || 0
-                        })
-                    }catch(scoreErr) {
-                        console.error('Failed to update score:', scoreErr)
-
-                        let errorMessage = 'Could not update your eco-store'
-
-                        if(scoreErr.response && scoreErr.response.data){
-                            errorMessage = scoreErr.response.data.error || errorMessage
-                            console.error('Backend error details:', scoreErr.response.data)
-                        }else if(scoreErr.message){
-                            errorMessage=scoreErr.message
-                        }
-
-                        setScoreUpdateStatus({
-                            success:false,
-                            message: `Error: ${errorMessage}`
-                        })
-                    }
-                }
-
-                setUploadMessage('Analysis complete!')
-                console.log('Identified:', brandRes)
-                console.log('Groq Analysis:', groqRes)
-            }else{
-                setGroqResult({message: 'No relevant text to analyze.'})
-                setUploadMessage('Analysis complete!')
-                console.log('Identified:', brandRes)
-                console.log('Groq Analysis: No relevant text to analyze.')
-            }
-        }catch(err){
-            setError('Failed to analyze image and product.')
-        }finally{
-            setIsLoading(false)
+  // Only one button: Analyze Image (calls identifyBrandWithImage, then search, extract, analyze)
+  const handleAnalyzeImage = async () => {
+    if (!capturedImage) return;
+    setIsLoading(true);
+    setUploadMessage('');
+    setBrandResult(null);
+    setGroqResult(null);
+    setError('');
+    setScoreUpdateStatus(null);
+    try {
+      // 1. Identify product from image
+      const brandRes = await identifyBrandWithImage(capturedImage);
+      setBrandResult(brandRes);
+      // Use the result as product name (string)
+      const product = typeof brandRes === 'string' ? brandRes : (brandRes?.name || brandRes?.product || JSON.stringify(brandRes));
+      // 2. Search product
+      const searchRes = await searchProduct(product);
+      const links = searchRes.cleaned_links || [];
+      // 3. Extract links if any
+      let combinedText = '';
+      if (links.length > 0) {
+        const extractRes = await extractLinks(links);
+        if (extractRes && extractRes.data && Array.isArray(extractRes.data.results)) {
+          combinedText = extractRes.data.results.map(r => r.rawContent).join('\n\n');
         }
+      }
+      // 4. Analyze with Groq
+      if (combinedText) {
+        const groqRes = await analyzeGroq(product, combinedText);
+        setGroqResult(groqRes);
+        
+        // 5. Parse score and update user's score in database
+        let scoreValue = null;
+        if (groqRes && typeof groqRes === 'object' && groqRes.result) {
+          const scoreMatch = groqRes.result.match(/Score:\s*(\d+)/i);
+          scoreValue = scoreMatch ? parseInt(scoreMatch[1], 10) : null;
+        } else if (typeof groqRes === 'string') {
+          const scoreMatch = groqRes.match(/Score:\s*(\d+)/i);
+          scoreValue = scoreMatch ? parseInt(scoreMatch[1], 10) : null;
+        }
+        
+        // If we have a valid score, update the user's score
+        if (scoreValue !== null) {
+          try {
+            // Using the updated API endpoint that expects points
+            console.log('Attempting updating user score with value:', scoreValue);
+            const scoreUpdateResult = await updateUserScore(scoreValue);
+            console.log('Score updated:', scoreUpdateResult);
+            
+            // Get user's updated score to display
+            const userScoreData = await getUserScore();
+            console.log('User score data:', userScoreData);
+            
+            setScoreUpdateStatus({
+              success: true,
+              message: `Your eco-score has been updated! +${scoreValue} points.`,
+              totalScore: userScoreData?.data?.user?.score || 0
+            });
+          } catch (scoreErr) {
+            console.error('Failed to update score:', scoreErr);
+            
+            // Extract the error message from the response, or use a fallback message
+            let errorMessage = 'Could not update your eco-score.';
+            
+            if (scoreErr.response && scoreErr.response.data) {
+              // If there's a response with data, use the error message from the backend
+              errorMessage = scoreErr.response.data.error || errorMessage;
+              console.error('Backend error details:', scoreErr.response.data);
+            } else if (scoreErr.message) {
+              // If there's no response data but there is an error message, use it
+              errorMessage = scoreErr.message;
+            }
+            
+            setScoreUpdateStatus({
+              success: false,
+              message: `Error: ${errorMessage}`
+            });
+          }
+        }
+        
+        setUploadMessage('Analysis complete!'); // Only after Groq result
+        console.log('Identified:', brandRes);
+        console.log('Groq Analysis:', groqRes);
+      } else {
+        setGroqResult({ message: 'No relevant text to analyze.' });
+        setUploadMessage('Analysis complete!');
+        console.log('Identified:', brandRes);
+        console.log('Groq Analysis: No relevant text to analyze.');
+      }
+    } catch (err) {
+      setError('Failed to analyze image and product.');
+    } finally {
+      setIsLoading(false);
     }
+  };
 
-    return (
+  return (
     <div className="min-h-screen bg-gradient-to-b from-emerald-50 to-teal-100 font-sans">
       <PageHeader 
-        title="Thrivable" 
+        title="Prospera" 
         onProfile={() => navigate('/user-profile')}
         onLeaderboard={() => navigate('/leaderboard')}
         onDashboard={() => navigate('/dashboard')}
         showBackButton={false}
       />
 
+      {/* Main Content */}
       <section className="container mx-auto px-6 py-8">
         <motion.div 
           className="grid lg:grid-cols-2 gap-8 max-w-7xl mx-auto"
@@ -128,11 +141,13 @@ function GetStartedPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7 }}
         >
+          {/* Left Side - Image Capture */}
           <div>
             <ImageCapture 
               onImageCapture={handleImageCapture}
               capturedImage={capturedImage}
             />
+            {/* Only one Analyze Image button and result display */}
             {capturedImage && (
               <div className="mt-4 flex flex-col items-center">
                 <button
@@ -169,7 +184,9 @@ function GetStartedPage() {
             )}
           </div>
 
+          {/* Right Side - Information Tabs */}
           <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+            {/* Tab Header - Only Environmental Impact */}
             <div className="flex border-b border-gray-200">
               <button
                 className={`flex-1 px-6 py-4 font-medium text-center cursor-pointer transition-colors text-emerald-600 border-b-2 border-emerald-600 bg-emerald-50`}
@@ -178,6 +195,7 @@ function GetStartedPage() {
                 Environmental Impact
               </button>
             </div>
+            {/* Tab Content */}
             <div className="p-6">
               <EnvironmentalImpactTab capturedImage={capturedImage} groqResult={groqResult} isLoading={isLoading} />
             </div>
@@ -188,7 +206,9 @@ function GetStartedPage() {
   );
 }
 
+// Tab Components
 const EnvironmentalImpactTab = ({ capturedImage, groqResult, isLoading }) => {
+  // Only parse if we have a result string
   let score = null, co2 = null, tips = null, explanation = null;
   let resultString = null;
   if (groqResult && typeof groqResult === 'object' && groqResult.result) {
@@ -255,6 +275,6 @@ const EnvironmentalImpactTab = ({ capturedImage, groqResult, isLoading }) => {
       ) : null}
     </div>
   );
-}
+};
 
-export default GetStartedPage
+export default GetStartedPage;

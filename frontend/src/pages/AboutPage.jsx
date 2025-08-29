@@ -2,7 +2,7 @@ import React from "react"
 import {motion, scale} from 'framer-motion'
 import {ArrowLeft, Lightbulb, Users, GraduationCap, Sparkles} from 'lucide-react'
 import {useNavigate} from 'react-router-dom'
-import logo from '../../assets/logo.png'
+import logo from '../assets/logo.png'
 
 const NavLink = ({children, onClick})=>(
     <motion.span

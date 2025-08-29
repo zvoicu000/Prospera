@@ -1,7 +1,7 @@
 import React from "react";
 import {easeInOut, motion} from 'framer-motion'
 import { Camera,Scan,Heart } from "lucide-react";
-import { NavLink, useNavigate } from "react-router-dom";
+import {  useNavigate } from "react-router-dom";
 import logo from '../assets/logo.png'
 
 function LandingPage() {

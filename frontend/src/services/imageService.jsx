@@ -3,13 +3,18 @@ import axios from 'axios'
 export async function sendImageToBackend(imageData) {
   try {
     function dataURLtoBlob(dataurl) {
-      const arr = dataurl.split(','), mime = arr[0].match(/:(.*?)/)[1], bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n)
-      for (let i = 0; i < n; i++) u8arr[i] = bstr.charCodeAt(i)
-      return new Blob([u8arr], { type: mime })
+      const arr = dataurl.split(',');
+      let mime = 'image/jpeg';
+      const mimeMatch = arr[0].match(/:(.*?);/);
+      if (mimeMatch) mime = mimeMatch[1];
+      const bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+      for (let i = 0; i < n; i++) u8arr[i] = bstr.charCodeAt(i);
+      return new Blob([u8arr], { type: mime });
     }
-    const blob = dataURLtoBlob(imageData)
-    const formData = new FormData()
-    formData.append('image', blob, 'upload.jpg')
+  const blob = dataURLtoBlob(imageData)
+  console.log('Blob type:', blob.type, 'Blob size:', blob.size);
+  const formData = new FormData()
+  formData.append('image', blob, 'upload.jpg')
 
     const response = await axios.post('http://localhost:3000/api/test-upload', formData, {
       headers: {
@@ -26,13 +31,18 @@ export async function sendImageToBackend(imageData) {
 export async function identifyBrandWithImage(imageData) {
   try {
     function dataURLtoBlob(dataurl) {
-      const arr = dataurl.split(','), mime = arr[0].match(/:(.*?)/)[1], bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n)
-      for (let i = 0; i < n; i++) u8arr[i] = bstr.charCodeAt(i)
-      return new Blob([u8arr], { type: mime })
+      const arr = dataurl.split(',');
+      let mime = 'image/jpeg';
+      const mimeMatch = arr[0].match(/:(.*?);/);
+      if (mimeMatch) mime = mimeMatch[1];
+      const bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+      for (let i = 0; i < n; i++) u8arr[i] = bstr.charCodeAt(i);
+      return new Blob([u8arr], { type: mime });
     }
-    const blob = dataURLtoBlob(imageData)
-    const formData = new FormData()
-    formData.append('image', blob, 'upload.jpg')
+  const blob = dataURLtoBlob(imageData)
+  console.log('Blob type:', blob.type, 'Blob size:', blob.size);
+  const formData = new FormData()
+  formData.append('image', blob, 'upload.jpg')
 
     const response = await axios.post('http://localhost:3000/api/identify-brand', formData, {
       headers: {
