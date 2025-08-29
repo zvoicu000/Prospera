@@ -34,11 +34,20 @@ Prospera is a powerful full-stack web app for brand/product identification and e
 ## Configuration
 1. Create a `.env` file in the `backend` folder and add your API keys and credentials. Example:
     ```env
-    GOOGLE_APPLICATION_CREDENTIALS=your-service-account-key-path.json
-    SUPABASE_URL=your-supabase-url
-    SUPABASE_KEY=your-supabase-key
-    GROQ_API_KEY=your-groq-api-key
-    TAVILY_API_KEY=your-tavily-api-key
+   Add all of the following environment variables to your `.env` file and replace with your own values:
+
+   ```
+   PORT
+   TAVILY_API_KEY
+   SUPABASE_URL
+   SUPABASE_ANON_KEY
+   SUPABASE_SERVICE_ROLE_KEY
+   JWT_SECRET
+   GROQ_API_KEY
+   GOOGLE_API_KEY
+   GOOGLE_PROJECT_ID
+   GOOGLE_APPLICATION_CREDENTIALS
+   ```
     # Add any other required API keys here
     ```
 
