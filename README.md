@@ -36,7 +36,6 @@ Prospera is a powerful full-stack web app for brand/product identification and e
     ```env
    Add all of the following environment variables to your `.env` file and replace with your own values:
 
-   ```
    PORT
    TAVILY_API_KEY
    SUPABASE_URL
@@ -47,7 +46,6 @@ Prospera is a powerful full-stack web app for brand/product identification and e
    GOOGLE_API_KEY
    GOOGLE_PROJECT_ID
    GOOGLE_APPLICATION_CREDENTIALS
-   ```
     # Add any other required API keys here
     ```
 
